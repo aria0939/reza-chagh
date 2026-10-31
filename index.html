@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#160b26">
+  <meta name="description" content="رضای چاق - بازی موبایلی خوردن و چاق‌کردن رضا!">
+  <title>رضای چاق</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="assets/characters/weight/stage_02.png" type="image/png">
+</head>
+<body>
+  <div id="app">
+
+    <!-- بوم بازی: پس‌زمینه، شخصیت، میز، غذاها، افکت‌ها -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- ======================= HUD بالا ======================= -->
+    <div id="hud" class="layer hidden">
+      <div class="hud-top">
+        <div class="pill coins">
+          <img src="assets/ui/icons/gold_coin.png" alt="">
+          <span id="coins-val">۰</span>
+        </div>
+        <div class="pill timer">
+          <i class="clock-ic"></i>
+          <span id="timer-val">۰۰:۶۰</span>
+        </div>
+        <div class="pill score">
+          <span class="lbl">امتیاز</span>
+          <span id="score-val">۰</span>
+        </div>
+        <button id="btn-pause" class="icon-btn" aria-label="مکث">
+          <img src="assets/ui/icon_buttons/pause.png" alt="مکث">
+        </button>
+      </div>
+
+      <!-- نمایش کمبو -->
+      <div id="combo-box" class="hidden">
+        <div id="combo-label">کمبو ×۲</div>
+        <div class="combo-bar"><div id="combo-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- ======================= نوار وزن ======================= -->
+    <div id="belly-bar" class="layer hidden">
+      <div class="belly-head">
+        <span class="belly-title">اندازه شکم</span>
+        <div id="stage-pips"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="belly-track">
+        <img class="belly-avatar left" src="assets/characters/weight/stage_00.png" alt="">
+        <div class="belly-rail" dir="ltr">
+          <img class="belly-bg" src="assets/ui/bars/belly_empty.png" alt="">
+          <div id="belly-fill-wrap"><img id="belly-fill" src="assets/ui/bars/belly_fill.png" alt=""></div>
+        </div>
+        <img class="belly-avatar right" src="assets/characters/weight/stage_04.png" alt="">
+      </div>
+    </div>
+
+    <!-- ======================= دکمه‌های اکشن ======================= -->
+    <div id="actions" class="layer hidden">
+      <button id="btn-feed" class="action feed" aria-label="بخور">
+        <span class="icon"><img src="assets/foods/items/burger.png" alt=""></span>
+        <span class="label">بخور</span>
+      </button>
+      <button id="btn-speed" class="action speed" aria-label="شتاب">
+        <span class="icon"><img src="assets/ui/icons/chili.png" alt=""></span>
+        <span class="label">شتاب</span>
+        <b id="speed-badge" class="badge">۲</b>
+        <span id="speed-timer" class="ptimer"></span>
+      </button>
+      <button id="btn-auto" class="action auto" aria-label="خودخور">
+        <span class="icon"><img src="assets/characters/hands/fork.png" alt=""></span>
+        <span class="label">خودخور</span>
+        <b id="auto-badge" class="badge">۱</b>
+        <span id="auto-timer" class="ptimer"></span>
+      </button>
+    </div>
+
+    <!-- بنر پیام (چاق‌تر شدی / شکم انفجاری) -->
+    <div id="banner"><span id="banner-text"></span></div>
+
+    <!-- ======================= صفحه بارگذاری ======================= -->
+    <div id="screen-loading" class="screen">
+      <div class="load-logo">رضای چاق</div>
+      <div class="load-bar"><div id="load-bar-fill"></div></div>
+      <div id="load-text">در حال بارگذاری...</div>
+      <button id="load-error" class="btn gray hidden">تلاش دوباره</button>
+    </div>
+
+    <!-- ======================= صفحه شروع ======================= -->
+    <div id="screen-start" class="screen hidden">
+      <div class="start-card">
+        <div class="game-logo">رضای <span>چاق</span></div>
+        <div class="tagline">رضا رو خوراک بده و چاقش کن!</div>
+        <div class="best-row">
+          <img src="assets/ui/icons/trophy.png" alt="">
+          <span>بهترین رکورد: <b id="best-val-start">۰</b></span>
+        </div>
+        <button id="btn-start" class="btn big green pulse">شروع بازی</button>
+        <div class="start-actions">
+          <button id="btn-sound-start" class="btn small toggle">
+            <img class="ic" src="assets/ui/icon_buttons/sound.png" alt="">
+            <span class="sound-label">صدا: روشن</span>
+          </button>
+        </div>
+        <div class="hint">روی غذاها بزن یا بکششون سمت دهان رضا!</div>
+      </div>
+    </div>
+
+    <!-- ======================= صفحه مکث ======================= -->
+    <div id="screen-pause" class="screen hidden">
+      <div class="panel">
+        <h2>بازی متوقف شد</h2>
+        <div class="pause-stats">
+          <span id="pause-score-lbl"></span>
+        </div>
+        <button id="btn-resume" class="btn green">ادامه بازی</button>
+        <div class="pause-toggles">
+          <button id="btn-sound-pause" class="btn small toggle">
+            <img class="ic" src="assets/ui/icon_buttons/sound.png" alt="">
+            <span class="sound-label">صدا: روشن</span>
+          </button>
+          <button id="btn-vibrate-pause" class="btn small toggle">
+            <span class="sound-label">لرزش: روشن</span>
+          </button>
+        </div>
+        <button id="btn-home-pause" class="btn gray">خانه</button>
+      </div>
+    </div>
+
+    <!-- ======================= صفحه پایان ======================= -->
+    <div id="screen-over" class="screen hidden">
+      <div class="panel over-panel">
+        <h2>وقت تمام شد!</h2>
+        <div id="over-record" class="record hidden">
+          <img src="assets/ui/icons/crown.png" alt=""> رکورد جدید!
+        </div>
+        <div class="score-final">
+          <span class="lbl">امتیاز نهایی</span>
+          <b id="over-score">۰</b>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><img src="assets/foods/items/burger.png" alt=""><span>غذاها</span><b id="over-foods">۰</b></div>
+          <div class="stat"><img src="assets/ui/icons/score_star.png" alt=""><span>بیشترین کمبو</span><b id="over-combo">×۰</b></div>
+          <div class="stat"><img src="assets/characters/weight/stage_04.png" alt=""><span>مرحله چاقی</span><b id="over-stage">-</b></div>
+          <div class="stat"><img src="assets/ui/icons/trophy.png" alt=""><span>بهترین رکورد</span><b id="over-best">۰</b></div>
+        </div>
+        <div id="over-reaction" class="reaction"></div>
+        <button id="btn-retry" class="btn green">دوباره بازی کن</button>
+        <button id="btn-home-over" class="btn gray">خانه</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ترتیب مهم: manifest → config → بقیه -->
+  <script src="js/manifest_data.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/food.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
